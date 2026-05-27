@@ -14,7 +14,7 @@ import LevelSelection from "./components/LevelSelection";
 import CharacterProfile from "./components/CharacterProfile";
 import StartScreen from "./components/StartScreen";
 import { LEVELS } from "./levels";
-import swordManImg from "./assets/role/侠客头像.png";
+import enemyImg from "./assets/role/侠客头像.png";
 
 const STATIC_DATA = generate_sample_data();
 const { moves: moves_lib, inner_skills, agility_skills } = STATIC_DATA;
@@ -116,6 +116,10 @@ function App() {
     p2Max: 0,
   });
   const logBoxRef = useRef(null);
+
+  const getEnemyImgPath = (enemyName: string) => {
+    return new URL(`./assets/enemies/${enemyName}.png`, import.meta.url).href;
+  };
 
   // Game instance ref to persist engine state across renders
   const engineRef = useRef(null);
@@ -314,7 +318,15 @@ function App() {
       }
 
       // Run engine locally
-      const { logs, hp_history } = engine.play_turn(playerMoves, enemyMoves);
+      const { logs, hp_history, tick_results } = engine.play_turn(
+        playerMoves,
+        enemyMoves
+      );
+
+      setState((s: any) => ({
+        ...s,
+        tick_results,
+      }));
 
       // Determine game state
       let game_over = false;
@@ -565,7 +577,7 @@ function App() {
               <div className="flex flex-col items-center mb-4 border-b border-gray-700 pb-4">
                 <div className="w-24 h-24 rounded-full border-2 border-blue-500 overflow-hidden mb-2 shadow-[0_0_10px_rgba(59,130,246,0.5)] bg-gray-900 group relative">
                   <img
-                    src={swordManImg}
+                    src={enemyImg}
                     alt="玩家头像"
                     className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-300"
                   />
@@ -647,6 +659,7 @@ function App() {
               currentTick={currentTick}
               gameOver={state.game_over}
               enemyIntent={state.enemy_intent}
+              tickResults={state.tick_results}
             />
 
             {/* 战斗日志 */}
@@ -662,16 +675,18 @@ function App() {
             {/* 敌人状态 */}
             <div className="bg-gray-800 rounded-lg p-4 shadow-lg border border-gray-700">
               <div className="flex flex-col items-center mb-4 border-b border-gray-700 pb-4">
-                <div className="w-24 h-24 rounded-full border-2 border-red-500 overflow-hidden mb-2 shadow-[0_0_10px_rgba(239,68,68,0.5)]">
+                <div className="w-24 h-24 rounded-full border-2 border-red-500 overflow-hidden mb-2 shadow-[0_0_10px_rgba(239,68,68,0.5)] bg-gray-900 group relative">
                   <img
-                    src={`/src/assets/enemies/${state.enemy?.name}.png`}
+                    src={
+                      state.enemy?.name
+                        ? getEnemyImgPath(state.enemy.name)
+                        : enemyImg
+                    }
                     alt={state.enemy?.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-300"
                     onError={(e: any) => {
                       e.target.onerror = null;
-                      // Fallback SVG if image not found
-                      e.target.outerHTML =
-                        '<svg viewBox="0 0 100 100" class="w-full h-full bg-gray-900 text-red-500 p-2"><path d="M 30 100 C 30 80 40 75 50 75 C 60 75 70 80 70 100 Z" fill="currentColor" /><circle cx="50" cy="65" r="12" fill="currentColor" /></svg>';
+                      e.target.src = enemyImg; // 回退到默认头像
                     }}
                   />
                 </div>

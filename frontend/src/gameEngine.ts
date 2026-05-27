@@ -216,33 +216,68 @@ export class BattleEngine {
     this.logs.push(msg);
   }
 
-  resolve_interval(interval, p1_action, p2_action) {
+  resolve_interval(
+    interval: number,
+    p1_action: any,
+    p2_action: any,
+    tick_results: any
+  ) {
     let first = this.p1;
     let second = this.p2;
     let act_first = p1_action;
     let act_second = p2_action;
+    let first_key = "p1";
+    let second_key = "p2";
 
     if (this.p2.agility > this.p1.agility) {
       first = this.p2;
       second = this.p1;
       act_first = p2_action;
       act_second = p1_action;
+      first_key = "p2";
+      second_key = "p1";
     } else if (this.p1.agility === this.p2.agility) {
       if (Math.random() < 0.5) {
         first = this.p2;
         second = this.p1;
         act_first = p2_action;
         act_second = p1_action;
+        first_key = "p2";
+        second_key = "p1";
       }
     }
 
-    this.execute_node(first, second, act_first, act_second);
+    this.execute_node(
+      first,
+      second,
+      act_first,
+      act_second,
+      tick_results,
+      first_key,
+      second_key
+    );
     if (second.is_alive()) {
-      this.execute_node(second, first, act_second, act_first);
+      this.execute_node(
+        second,
+        first,
+        act_second,
+        act_first,
+        tick_results,
+        second_key,
+        first_key
+      );
     }
   }
 
-  execute_node(attacker, defender, atk_action, def_action) {
+  execute_node(
+    attacker: Character,
+    defender: Character,
+    atk_action: any,
+    def_action: any,
+    tick_results: any,
+    attacker_key: string,
+    defender_key: string
+  ) {
     if (!atk_action) return;
 
     const [move, node, combo_bonus] = atk_action;
@@ -288,10 +323,14 @@ export class BattleEngine {
           `  -> ${defender.name} 凭借高超轻功(差值:${agility_diff})，身形一晃完美闪避了攻击！`
         );
       }
+      tick_results[defender_key].push("闪避");
       return;
     }
 
     if (node.is_attack) {
+      if (combo_bonus > 1.0) {
+        tick_results[attacker_key].push("连击");
+      }
       const atk_val =
         attacker.get_attack_val(move.name) * node.value_modifier * combo_bonus;
       let def_val = defender.get_defense_val();
@@ -308,12 +347,14 @@ export class BattleEngine {
           this.log(
             `  -> ${defender.name} 的防守节点成功护住了 ${node.target_part}！`
           );
+          tick_results[defender_key].push("招架");
         }
       }
 
       if (node.special_effect === "pierce") {
         def_val = Math.floor(def_val * 0.5);
         this.log(`  -> 【破甲】生效，招式凌厉，无视了敌人一半防御！`);
+        tick_results[attacker_key].push("破甲");
       }
 
       let damage = Math.max(1, Math.floor(atk_val - def_val));
@@ -322,6 +363,7 @@ export class BattleEngine {
         damage = Math.floor(damage * 1.5 + 20);
         is_weakness_break = true;
         this.log(`  -> 击中弱势节点！【弱点击破】触发！`);
+        tick_results[defender_key].push("破绽");
       } else if (target_strong && def_action) {
         damage = Math.floor(damage * 0.7);
         this.log(`  -> 击中强势节点，伤害被化解部分。`);
@@ -331,11 +373,13 @@ export class BattleEngine {
       this.log(
         `  -> 造成了 ${damage} 点伤害！ (剩余HP: ${defender.hp}/${defender.max_hp})`
       );
+      tick_results[defender_key].push(`-${damage}`);
 
       if (node.special_effect === "lifesteal") {
         const heal = Math.floor(damage * 0.3);
         attacker.hp = Math.min(attacker.max_hp, attacker.hp + heal);
         this.log(`  -> 【吸血】生效，${attacker.name} 恢复了 ${heal} 点气血！`);
+        tick_results[attacker_key].push(`+${heal}`);
       }
 
       if (def_action) {
@@ -346,6 +390,7 @@ export class BattleEngine {
           this.log(
             `  -> 【反震】生效，${defender.name} 的防守节点将 ${reflect} 点伤害反弹给了 ${attacker.name}！`
           );
+          tick_results[attacker_key].push(`反震 -${reflect}`);
         }
       }
 
@@ -417,12 +462,15 @@ export class BattleEngine {
     build_timeline(p1_moves, p1_timeline, this.p1);
     build_timeline(p2_moves, p2_timeline, this.p2);
 
+    const tick_results: Record<number, { p1: string[]; p2: string[] }> = {};
+
     for (let i = 0; i < 12; i++) {
+      tick_results[i] = { p1: [], p2: [] };
       const p1_act = p1_timeline[i];
       const p2_act = p2_timeline[i];
       if (p1_act || p2_act) {
         this.log(`\n[第 ${i + 1} 息]`);
-        this.resolve_interval(i, p1_act, p2_act);
+        this.resolve_interval(i, p1_act, p2_act, tick_results[i]);
       }
 
       hp_history.push({
@@ -469,7 +517,7 @@ export class BattleEngine {
     }
 
     this.turn += 1;
-    return { logs: this.logs, hp_history };
+    return { logs: this.logs, hp_history, tick_results };
   }
 }
 

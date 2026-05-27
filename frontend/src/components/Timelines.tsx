@@ -18,7 +18,8 @@ export default function Timelines({
   currentTick,
   gameOver,
   enemyIntent,
-}) {
+  tickResults,
+}: any) {
   return (
     <div className="bg-gray-800 rounded-lg p-4 shadow-lg border border-gray-700">
       <div className="flex justify-between items-end mb-3">
@@ -73,7 +74,7 @@ export default function Timelines({
                   return (
                     <div
                       key={tickOffset}
-                      className={`flex-1 flex flex-col items-center justify-center border-r border-gray-900/30 last:border-r-0 ${
+                      className={`relative flex-1 flex flex-col items-center justify-center border-r border-gray-900/30 last:border-r-0 ${
                         isHighlighted
                           ? "bg-white/30 shadow-inner"
                           : "bg-black/10"
@@ -100,6 +101,29 @@ export default function Timelines({
                       ) : (
                         <span className="text-[10px] text-gray-400">-</span>
                       )}
+
+                      {tickResults &&
+                        tickIndex < currentTick &&
+                        tickResults[tickIndex]?.p1?.length > 0 && (
+                          <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center pointer-events-none p-0.5">
+                            {tickResults[tickIndex].p1.map(
+                              (res: string, idx: number) => (
+                                <span
+                                  key={idx}
+                                  className={`text-[10px] font-bold leading-tight drop-shadow-md ${
+                                    res.includes("-")
+                                      ? "text-red-400"
+                                      : res.includes("+")
+                                      ? "text-green-400"
+                                      : "text-amber-400"
+                                  }`}
+                                >
+                                  {res}
+                                </span>
+                              )
+                            )}
+                          </div>
+                        )}
                     </div>
                   );
                 })}
@@ -151,7 +175,7 @@ export default function Timelines({
                       return (
                         <div
                           key={tickOffset}
-                          className={`flex-1 flex flex-col items-center justify-center border-r border-gray-900/30 last:border-r-0 ${
+                          className={`relative flex-1 flex flex-col items-center justify-center border-r border-gray-900/30 last:border-r-0 ${
                             isHighlighted
                               ? "bg-white/30 shadow-inner"
                               : "bg-black/10"
@@ -180,6 +204,29 @@ export default function Timelines({
                           ) : (
                             <span className="text-[10px] text-gray-400">-</span>
                           )}
+
+                          {tickResults &&
+                            tickIndex < currentTick &&
+                            tickResults[tickIndex]?.p2?.length > 0 && (
+                              <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center pointer-events-none p-0.5">
+                                {tickResults[tickIndex].p2.map(
+                                  (res: string, idx: number) => (
+                                    <span
+                                      key={idx}
+                                      className={`text-[10px] font-bold leading-tight drop-shadow-md ${
+                                        res.includes("-")
+                                          ? "text-red-400"
+                                          : res.includes("+")
+                                          ? "text-green-400"
+                                          : "text-amber-400"
+                                      }`}
+                                    >
+                                      {res}
+                                    </span>
+                                  )
+                                )}
+                              </div>
+                            )}
                         </div>
                       );
                     })}
