@@ -15,7 +15,8 @@ export default function CharacterProfile({
   playerName,
   setPlayerName,
   onBack,
-}) {
+  onRestart,
+}: any) {
   const baseStats = getPlayerBaseStats(playerLevel);
   const expNeeded = playerLevel * 100;
 
@@ -47,6 +48,16 @@ export default function CharacterProfile({
           className="absolute -top-2 left-0 text-gray-400 hover:text-amber-500 flex items-center transition"
         >
           &larr; 返回
+        </button>
+        <button
+          onClick={() => {
+            if (window.confirm("确定要重新开始游戏吗？进度将全部丢失！")) {
+              onRestart();
+            }
+          }}
+          className="absolute -top-2 right-0 text-red-500 hover:text-red-400 flex items-center transition text-sm border border-red-500/50 rounded px-3 py-1 bg-red-900/20"
+        >
+          重新开始游戏
         </button>
         <div className="flex flex-col items-center justify-center mb-8 mt-8">
           {isEditingName ? (
@@ -188,7 +199,10 @@ export default function CharacterProfile({
                   }`}
                 >
                   <div className="font-bold text-gray-200 mb-1">
-                    {skill.name}
+                    {skill.name}{" "}
+                    <span className="ml-2 text-xs bg-gray-700 px-2 py-0.5 rounded text-amber-500">
+                      {skill.level}
+                    </span>
                   </div>
                   <div className="text-xs text-gray-400 mb-2">
                     {skill.description}
@@ -221,7 +235,10 @@ export default function CharacterProfile({
                   }`}
                 >
                   <div className="font-bold text-gray-200 mb-1">
-                    {skill.name}
+                    {skill.name}{" "}
+                    <span className="ml-2 text-xs bg-gray-700 px-2 py-0.5 rounded text-amber-500">
+                      {skill.level}
+                    </span>
                   </div>
                   <div className="text-xs text-gray-400 mb-2">
                     {skill.description}
@@ -243,20 +260,45 @@ export default function CharacterProfile({
             <h2 className="text-xl font-bold text-amber-400 mb-4">
               已领悟招式
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-              {moves.map((move) => (
-                <div
-                  key={move.name}
-                  className="p-3 bg-gray-900 border border-gray-700 rounded text-sm"
-                >
-                  <div className="font-bold text-gray-200 mb-1">
-                    {move.name}
+            <div className="space-y-6">
+              {Object.entries<any[]>(
+                moves.reduce((acc, move) => {
+                  if (!acc[move.set_name]) acc[move.set_name] = [];
+                  acc[move.set_name].push(move);
+                  return acc;
+                }, {})
+              ).map(([setName, setMoves]) => (
+                <div key={setName}>
+                  <div className="flex items-center mb-3">
+                    <h3 className="text-lg font-bold text-gray-300">
+                      {setName}
+                    </h3>
+                    {setMoves[0] && (
+                      <span className="ml-2 text-xs bg-gray-700 px-2 py-0.5 rounded text-amber-500">
+                        {setMoves[0].level}
+                      </span>
+                    )}
                   </div>
-                  <div className="text-xs text-gray-500 mb-1">
-                    耗时: {move.duration} 息
-                  </div>
-                  <div className="text-xs text-gray-400 truncate">
-                    {move.description}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    {setMoves.map((move) => (
+                      <div
+                        key={move.name}
+                        className="p-3 bg-gray-900 border border-gray-700 rounded text-sm"
+                      >
+                        <div className="font-bold text-gray-200 mb-1">
+                          {move.name.split("-")[1] || move.name}
+                        </div>
+                        <div className="text-xs text-gray-500 mb-1">
+                          耗时: {move.duration} 息
+                        </div>
+                        <div
+                          className="text-xs text-gray-400 line-clamp-2"
+                          title={move.description}
+                        >
+                          {move.description}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               ))}

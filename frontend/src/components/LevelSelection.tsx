@@ -5,6 +5,7 @@ export default function LevelSelection({
   onSelect,
   completedLevels = [],
   onProfileClick,
+  onUnlockAll,
 }) {
   const unlockedLevels = useMemo(() => {
     const unlocked = new Set([1]); // 第一关默认解锁
@@ -97,6 +98,14 @@ export default function LevelSelection({
   return (
     <div className="bg-gray-900 text-gray-100 font-sans min-h-screen flex flex-col items-center p-8 relative overflow-x-hidden">
       <div className="absolute top-8 right-8 z-20 flex space-x-4">
+        {onUnlockAll && (
+          <button
+            onClick={onUnlockAll}
+            className="px-4 py-2 bg-purple-800/80 hover:bg-purple-700 text-white font-bold rounded shadow border border-purple-600 transition text-sm flex items-center"
+          >
+            一键解锁 (Debug)
+          </button>
+        )}
         <button
           onClick={resetProgress}
           className="px-4 py-2 bg-red-800/80 hover:bg-red-700 text-white font-bold rounded shadow border border-red-600 transition text-sm flex items-center"
@@ -151,7 +160,7 @@ export default function LevelSelection({
               return (
                 <div
                   key={level.id}
-                  ref={(el) => (nodeRefs.current[level.id] = el)}
+                  ref={(el) => { nodeRefs.current[level.id] = el; }}
                   className={`w-64 border rounded-xl p-4 flex flex-col relative transition-all duration-300 transform group hover:z-50 ${
                     isLocked
                       ? "bg-gray-900 border-gray-800 opacity-60 grayscale"

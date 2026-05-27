@@ -12,6 +12,7 @@ import BattleLog from "./components/BattleLog";
 import DamageCalculationGuide from "./components/DamageCalculationGuide";
 import LevelSelection from "./components/LevelSelection";
 import CharacterProfile from "./components/CharacterProfile";
+import StartScreen from "./components/StartScreen";
 import { LEVELS } from "./levels";
 import swordManImg from "./assets/role/侠客头像.png";
 
@@ -19,7 +20,10 @@ const STATIC_DATA = generate_sample_data();
 const { moves: moves_lib, inner_skills, agility_skills } = STATIC_DATA;
 
 function App() {
-  const [currentView, setCurrentView] = useState("levelSelect");
+  const [currentView, setCurrentView] = useState(() => {
+    const started = localStorage.getItem("sword_art_has_started");
+    return started ? "levelSelect" : "start";
+  });
   const [currentLevel, setCurrentLevel] = useState(null);
   const [completedLevels, setCompletedLevels] = useState(() => {
     const saved = localStorage.getItem("sword_art_completed_levels");
@@ -55,7 +59,7 @@ function App() {
 
   const [playerName, setPlayerName] = useState(() => {
     const saved = localStorage.getItem("sword_art_player_name");
-    return saved || "无名少侠";
+    return saved || "小虾米";
   });
 
   const [equippedInner, setEquippedInner] = useState(
@@ -65,7 +69,7 @@ function App() {
     () => localStorage.getItem("sword_art_equipped_agility") || "水上漂"
   );
 
-  const [state, setState] = useState({});
+  const [state, setState] = useState<any>({});
 
   useEffect(() => {
     localStorage.setItem(
@@ -84,8 +88,8 @@ function App() {
       "sword_art_unlocked_moves",
       JSON.stringify(unlockedMoves)
     );
-    localStorage.setItem("sword_art_player_level", playerLevel);
-    localStorage.setItem("sword_art_player_exp", playerExp);
+    localStorage.setItem("sword_art_player_level", playerLevel.toString());
+    localStorage.setItem("sword_art_player_exp", playerExp.toString());
     localStorage.setItem("sword_art_player_name", playerName);
   }, [
     completedLevels,
@@ -203,11 +207,40 @@ function App() {
     setCurrentTick(-1);
     setIsPlaying(false);
     setCurrentView("battle");
+    window.scrollTo(0, 0);
   };
 
   const returnToLevelSelect = () => {
     setCurrentView("levelSelect");
     setState({});
+    window.scrollTo(0, 0);
+  };
+
+  const handleStartGame = (startData) => {
+    setPlayerName(startData.name);
+    setEquippedInner(startData.inner);
+    setEquippedAgility(startData.agility);
+
+    // Unlock all moves in the selected set
+    const initialMoves = moves_lib
+      .filter((m) => m.set_name === startData.moveSet)
+      .map((m) => m.name);
+    setUnlockedMoves(initialMoves);
+
+    setUnlockedInnerSkills([startData.inner]);
+    setUnlockedAgilitySkills([startData.agility]);
+    setCompletedLevels([]);
+    setPlayerLevel(1);
+    setPlayerExp(0);
+    localStorage.setItem("sword_art_has_started", "true");
+    setCurrentView("levelSelect");
+    window.scrollTo(0, 0);
+  };
+
+  const handleUnlockAll = () => {
+    if (window.confirm("确定要一键解锁所有关卡吗（Debug）？")) {
+      setCompletedLevels(LEVELS.map((l) => l.id));
+    }
   };
 
   useEffect(() => {
@@ -324,10 +357,15 @@ function App() {
                 prev.includes(skillName) ? prev : [...prev, skillName]
               );
             } else if (reward.includes("招式-")) {
-              const moveName = reward.split("-")[1];
-              setUnlockedMoves((prev) =>
-                prev.includes(moveName) ? prev : [...prev, moveName]
-              );
+              const setName = reward.split("-")[1];
+              // Add all moves with this set_name
+              const newMoves = state.moves
+                .filter((m) => m.set_name === setName)
+                .map((m) => m.name);
+              setUnlockedMoves((prev) => {
+                const combined = [...new Set([...prev, ...newMoves])];
+                return combined;
+              });
             }
           });
         }
@@ -437,6 +475,17 @@ function App() {
     startLevel(currentLevel);
   };
 
+  if (currentView === "start") {
+    return (
+      <StartScreen
+        innerSkills={inner_skills}
+        agilitySkills={agility_skills}
+        moves={moves_lib}
+        onStartGame={handleStartGame}
+      />
+    );
+  }
+
   if (currentView === "profile") {
     const availableInner = inner_skills.filter((s) =>
       unlockedInnerSkills.includes(s.name)
@@ -461,7 +510,15 @@ function App() {
         playerExp={playerExp}
         playerName={playerName}
         setPlayerName={setPlayerName}
-        onBack={() => setCurrentView("levelSelect")}
+        onBack={() => {
+          setCurrentView("levelSelect");
+          window.scrollTo(0, 0);
+        }}
+        onRestart={() => {
+          localStorage.removeItem("sword_art_has_started");
+          setCurrentView("start");
+          window.scrollTo(0, 0);
+        }}
       />
     );
   }
@@ -472,7 +529,11 @@ function App() {
         levels={LEVELS}
         onSelect={startLevel}
         completedLevels={completedLevels}
-        onProfileClick={() => setCurrentView("profile")}
+        onProfileClick={() => {
+          setCurrentView("profile");
+          window.scrollTo(0, 0);
+        }}
+        onUnlockAll={handleUnlockAll}
       />
     );
   }
@@ -606,7 +667,7 @@ function App() {
                     src={`/src/assets/enemies/${state.enemy?.name}.png`}
                     alt={state.enemy?.name}
                     className="w-full h-full object-cover"
-                    onError={(e) => {
+                    onError={(e: any) => {
                       e.target.onerror = null;
                       // Fallback SVG if image not found
                       e.target.outerHTML =
