@@ -1,0 +1,762 @@
+export const LEVELS = [
+  {
+    id: 1,
+    next: [
+      2,
+      3
+    ],
+    name: "第一关：黑风寨外围",
+    enemyName: "喽啰·王二狗",
+    hp: 150,
+    inner_amount: 2,
+    inner_mastery: 1,
+    agility: 5,
+    weapon_atk: 2,
+    armor_def: 1,
+    inner_skill: "吐纳法",
+    agility_skill: "水上漂",
+    description: "最底层的山贼，三脚猫功夫。",
+    rewards: [
+      "经验+50"
+    ],
+    enemy_moves: [
+      "黑风刀法-力劈华山",
+      "太祖长拳-冲步双掌"
+    ]
+  },
+  {
+    id: 2,
+    next: [
+      4,
+      5
+    ],
+    name: "第二关：黑风寨前厅",
+    enemyName: "头目·赵铁柱",
+    hp: 250,
+    inner_amount: 4,
+    inner_mastery: 2,
+    agility: 10,
+    weapon_atk: 5,
+    armor_def: 3,
+    inner_skill: "吐纳法",
+    agility_skill: "水上漂",
+    description: "有把子力气的山贼，会一点拳脚。",
+    rewards: [
+      "经验+80",
+      "少林轻功-一苇渡江"
+    ],
+    enemy_moves: [
+      "黑风刀法-力劈华山",
+      "太祖长拳-冲步双掌"
+    ]
+  },
+  {
+    id: 3,
+    next: [
+      5,
+      6
+    ],
+    name: "第二关：黑风寨暗哨",
+    enemyName: "暗哨·孙飞刀",
+    hp: 180,
+    inner_amount: 3,
+    inner_mastery: 2,
+    agility: 25,
+    weapon_atk: 8,
+    armor_def: 1,
+    inner_skill: "吐纳法",
+    agility_skill: "水上漂",
+    description: "身手敏捷，喜欢用暗器伤人。",
+    rewards: [
+      "经验+80"
+    ],
+    enemy_moves: [
+      "飞刀绝技-流星赶月",
+      "太祖长拳-十字踢腿"
+    ]
+  },
+  {
+    id: 4,
+    next: [
+      7
+    ],
+    name: "第三关：少林叛徒",
+    enemyName: "破戒僧·法狂",
+    hp: 400,
+    inner_amount: 8,
+    inner_mastery: 4,
+    agility: 15,
+    weapon_atk: 12,
+    armor_def: 8,
+    inner_skill: "少林纯阳功",
+    agility_skill: "一苇渡江",
+    description: "因偷吃酒肉被赶出少林，力大无穷，硬功了得。",
+    rewards: [
+      "经验+150",
+      "少林内功-少林纯阳功"
+    ],
+    enemy_moves: [
+      "大金刚拳-金刚怒目",
+      "罗汉拳-黑虎掏心",
+      "太祖长拳-双抄封天"
+    ]
+  },
+  {
+    id: 5,
+    next: [
+      7,
+      8
+    ],
+    name: "第三关：黑风寨聚义厅",
+    enemyName: "黑风寨主·严熊",
+    hp: 500,
+    inner_amount: 10,
+    inner_mastery: 5,
+    agility: 30,
+    weapon_atk: 15,
+    armor_def: 10,
+    inner_skill: "吐纳法",
+    agility_skill: "一苇渡江",
+    description: "黑风寨的寨主，武功已有一定火候。",
+    rewards: [
+      "经验+200"
+    ],
+    enemy_moves: [
+      "黑风刀法-力劈华山",
+      "太祖长拳-冲步双掌"
+    ]
+  },
+  {
+    id: 6,
+    next: [
+      8
+    ],
+    name: "第三关：武当弃徒",
+    enemyName: "武当弃徒·宋青书",
+    hp: 450,
+    inner_amount: 12,
+    inner_mastery: 5,
+    agility: 45,
+    weapon_atk: 10,
+    armor_def: 8,
+    inner_skill: "武当九阳功",
+    agility_skill: "梯云纵",
+    description: "偷学武当绝学，身法鬼魅，且能绵绵不绝地恢复内力气血。",
+    rewards: [
+      "经验+200",
+      "武当内功-武当九阳功",
+      "武当轻功-梯云纵"
+    ],
+    enemy_moves: [
+      "太极拳-揽雀尾",
+      "武当绵掌-白鹤亮翅",
+      "太祖长拳-十字踢腿"
+    ]
+  },
+  {
+    id: 7,
+    next: [
+      9
+    ],
+    name: "第四关：金国先锋",
+    enemyName: "金国悍将·完颜铁",
+    hp: 800,
+    inner_amount: 15,
+    inner_mastery: 6,
+    agility: 20,
+    weapon_atk: 25,
+    armor_def: 25,
+    inner_skill: "少林纯阳功",
+    agility_skill: "水上漂",
+    description: "身披重甲的金国悍将，防御极高，犹如铁壁。",
+    rewards: [
+      "经验+300"
+    ],
+    enemy_moves: [
+      "黑风刀法-力劈华山",
+      "太祖长拳-冲步双掌"
+    ]
+  },
+  {
+    id: 8,
+    next: [
+      9
+    ],
+    name: "第四关：邪教妖女",
+    enemyName: "五毒妖女·蓝凤凰",
+    hp: 700,
+    inner_amount: 18,
+    inner_mastery: 7,
+    agility: 55,
+    weapon_atk: 20,
+    armor_def: 12,
+    inner_skill: "武当九阳功",
+    agility_skill: "梯云纵",
+    description: "招式诡异，轻功极高，极难命中。",
+    rewards: [
+      "经验+300"
+    ],
+    enemy_moves: [
+      "血刀大法-血海深仇",
+      "九阴白骨爪-九阴神抓",
+      "飞刀绝技-流星赶月"
+    ]
+  },
+  {
+    id: 9,
+    next: [
+      10,
+      11
+    ],
+    name: "第五关：入魔剑客",
+    enemyName: "疯剑·谢十三",
+    hp: 1200,
+    inner_amount: 25,
+    inner_mastery: 8,
+    agility: 60,
+    weapon_atk: 40,
+    armor_def: 20,
+    inner_skill: "少林纯阳功",
+    agility_skill: "梯云纵",
+    description: "昔日神话，如今走火入魔，功力深不可测，出招招招致命。",
+    rewards: [
+      "经验+500"
+    ],
+    enemy_moves: [
+      "狂风快剑-风卷残云",
+      "武当绵掌-白鹤亮翅",
+      "太极拳-揽雀尾"
+    ]
+  },
+  {
+    id: 10,
+    next: [
+      12,
+      13
+    ],
+    name: "第六关：嵩山脚下",
+    enemyName: "嵩山快手·史登",
+    hp: 1400,
+    inner_amount: 28,
+    inner_mastery: 9,
+    agility: 65,
+    weapon_atk: 44,
+    armor_def: 23,
+    inner_skill: "武当九阳功",
+    agility_skill: "一苇渡江",
+    description: "武功平平，但人多势众。",
+    rewards: [
+      "经验+600"
+    ],
+    enemy_moves: [
+      "狂风快剑-风卷残云",
+      "武当绵掌-白鹤亮翅",
+      "太极拳-揽雀尾"
+    ]
+  },
+  {
+    id: 11,
+    next: [
+      13,
+      14
+    ],
+    name: "第六关：洛阳城外",
+    enemyName: "洛阳恶霸·张三",
+    hp: 1400,
+    inner_amount: 28,
+    inner_mastery: 9,
+    agility: 65,
+    weapon_atk: 44,
+    armor_def: 23,
+    inner_skill: "吐纳法",
+    agility_skill: "梯云纵",
+    description: "会几手三脚猫功夫。",
+    rewards: [
+      "经验+600"
+    ],
+    enemy_moves: [
+      "太祖长拳-冲步双掌",
+      "太祖长拳-十字踢腿",
+      "太祖长拳-双抄封天"
+    ]
+  },
+  {
+    id: 12,
+    next: [
+      15
+    ],
+    name: "第七关：黄河帮众",
+    enemyName: "黄河四鬼·沈青",
+    hp: 1600,
+    inner_amount: 31,
+    inner_mastery: 10,
+    agility: 70,
+    weapon_atk: 48,
+    armor_def: 26,
+    inner_skill: "吐纳法",
+    agility_skill: "水上漂",
+    description: "水上功夫了得。",
+    rewards: [
+      "经验+700"
+    ],
+    enemy_moves: [
+      "铁掌功-水上狂飙",
+      "黑风刀法-力劈华山"
+    ]
+  },
+  {
+    id: 13,
+    next: [
+      15,
+      16
+    ],
+    name: "第七关：铁掌门人",
+    enemyName: "铁掌传人·裘小千",
+    hp: 1600,
+    inner_amount: 31,
+    inner_mastery: 10,
+    agility: 70,
+    weapon_atk: 48,
+    armor_def: 26,
+    inner_skill: "少林纯阳功",
+    agility_skill: "一苇渡江",
+    description: "铁掌功威力惊人。",
+    rewards: [
+      "经验+700"
+    ],
+    enemy_moves: [
+      "铁掌功-水上狂飙",
+      "黑风刀法-力劈华山"
+    ]
+  },
+  {
+    id: 14,
+    next: [
+      16
+    ],
+    name: "第七关：青城剑客",
+    enemyName: "青城恶剑·余沧",
+    hp: 1600,
+    inner_amount: 31,
+    inner_mastery: 10,
+    agility: 70,
+    weapon_atk: 48,
+    armor_def: 26,
+    inner_skill: "武当九阳功",
+    agility_skill: "水上漂",
+    description: "剑法狠辣。",
+    rewards: [
+      "经验+700"
+    ],
+    enemy_moves: [
+      "狂风快剑-风卷残云",
+      "武当绵掌-白鹤亮翅",
+      "太极拳-揽雀尾"
+    ]
+  },
+  {
+    id: 15,
+    next: [
+      17
+    ],
+    name: "第八关：丐帮长老",
+    enemyName: "掌钵龙头·鲁有脚",
+    hp: 1800,
+    inner_amount: 34,
+    inner_mastery: 11,
+    agility: 75,
+    weapon_atk: 52,
+    armor_def: 29,
+    inner_skill: "武当九阳功",
+    agility_skill: "水上漂",
+    description: "降龙十八掌刚猛无比。",
+    rewards: [
+      "经验+800",
+      "招式-降龙十八掌-亢龙有悔"
+    ],
+    enemy_moves: [
+      "降龙十八掌-亢龙有悔",
+      "铁掌功-水上狂飙",
+      "太祖长拳-冲步双掌"
+    ]
+  },
+  {
+    id: 16,
+    next: [
+      17
+    ],
+    name: "第八关：点苍高手",
+    enemyName: "点苍剑客·柳如是",
+    hp: 1800,
+    inner_amount: 34,
+    inner_mastery: 11,
+    agility: 75,
+    weapon_atk: 52,
+    armor_def: 29,
+    inner_skill: "吐纳法",
+    agility_skill: "梯云纵",
+    description: "剑法轻灵飘逸。",
+    rewards: [
+      "经验+800"
+    ],
+    enemy_moves: [
+      "狂风快剑-风卷残云",
+      "武当绵掌-白鹤亮翅",
+      "太极拳-揽雀尾"
+    ]
+  },
+  {
+    id: 17,
+    next: [
+      18,
+      19
+    ],
+    name: "第九关：华山道长",
+    enemyName: "紫霞剑·岳不群",
+    hp: 2000,
+    inner_amount: 37,
+    inner_mastery: 12,
+    agility: 80,
+    weapon_atk: 56,
+    armor_def: 32,
+    inner_skill: "少林纯阳功",
+    agility_skill: "梯云纵",
+    description: "内力深厚，剑法严谨。",
+    rewards: [
+      "经验+900"
+    ],
+    enemy_moves: [
+      "狂风快剑-风卷残云",
+      "武当绵掌-白鹤亮翅",
+      "太极拳-揽雀尾"
+    ]
+  },
+  {
+    id: 18,
+    next: [
+      20,
+      21
+    ],
+    name: "第十关：日月神教",
+    enemyName: "风雷堂主·童百熊",
+    hp: 2200,
+    inner_amount: 40,
+    inner_mastery: 13,
+    agility: 85,
+    weapon_atk: 60,
+    armor_def: 35,
+    inner_skill: "吐纳法",
+    agility_skill: "一苇渡江",
+    description: "行事诡异，手段毒辣。",
+    rewards: [
+      "经验+1000",
+      "招式-九阴白骨爪-九阴神抓"
+    ],
+    enemy_moves: [
+      "血刀大法-血海深仇",
+      "九阴白骨爪-九阴神抓",
+      "飞刀绝技-流星赶月"
+    ]
+  },
+  {
+    id: 19,
+    next: [
+      21,
+      22
+    ],
+    name: "第十关：魔教长老",
+    enemyName: "血刀老祖",
+    hp: 2200,
+    inner_amount: 40,
+    inner_mastery: 13,
+    agility: 85,
+    weapon_atk: 60,
+    armor_def: 35,
+    inner_skill: "少林纯阳功",
+    agility_skill: "一苇渡江",
+    description: "刀法凶残，嗜血成性。",
+    rewards: [
+      "经验+1000"
+    ],
+    enemy_moves: [
+      "血刀大法-血海深仇",
+      "九阴白骨爪-九阴神抓",
+      "飞刀绝技-流星赶月"
+    ]
+  },
+  {
+    id: 20,
+    next: [
+      23
+    ],
+    name: "第十一关：逍遥游侠",
+    enemyName: "凌波仙子·苏星河",
+    hp: 2400,
+    inner_amount: 43,
+    inner_mastery: 14,
+    agility: 90,
+    weapon_atk: 64,
+    armor_def: 38,
+    inner_skill: "武当九阳功",
+    agility_skill: "一苇渡江",
+    description: "轻功极高，行踪飘忽。",
+    rewards: [
+      "经验+1100"
+    ],
+    enemy_moves: [
+      "武当绵掌-白鹤亮翅",
+      "弹指神通-漫天花雨"
+    ]
+  },
+  {
+    id: 21,
+    next: [
+      23,
+      24
+    ],
+    name: "第十一关：崆峒剑客",
+    enemyName: "崆峒五老·唐文亮",
+    hp: 2400,
+    inner_amount: 43,
+    inner_mastery: 14,
+    agility: 90,
+    weapon_atk: 64,
+    armor_def: 38,
+    inner_skill: "少林纯阳功",
+    agility_skill: "梯云纵",
+    description: "七伤拳威力惊人。",
+    rewards: [
+      "经验+1100"
+    ],
+    enemy_moves: [
+      "七伤拳-一练七伤",
+      "太祖长拳-冲步双掌"
+    ]
+  },
+  {
+    id: 22,
+    next: [
+      24
+    ],
+    name: "第十一关：昆仑隐士",
+    enemyName: "昆仑三圣·何足道",
+    hp: 2400,
+    inner_amount: 43,
+    inner_mastery: 14,
+    agility: 90,
+    weapon_atk: 64,
+    armor_def: 38,
+    inner_skill: "少林纯阳功",
+    agility_skill: "水上漂",
+    description: "剑法古朴，内力悠长。",
+    rewards: [
+      "经验+1100"
+    ],
+    enemy_moves: [
+      "狂风快剑-风卷残云",
+      "武当绵掌-白鹤亮翅",
+      "太极拳-揽雀尾"
+    ]
+  },
+  {
+    id: 23,
+    next: [
+      25
+    ],
+    name: "第十二关：少林达摩院",
+    enemyName: "达摩首座·玄慈",
+    hp: 2600,
+    inner_amount: 46,
+    inner_mastery: 15,
+    agility: 95,
+    weapon_atk: 68,
+    armor_def: 41,
+    inner_skill: "少林纯阳功",
+    agility_skill: "梯云纵",
+    description: "少林绝学集大成者。",
+    rewards: [
+      "经验+1200"
+    ],
+    enemy_moves: [
+      "大金刚拳-金刚怒目",
+      "罗汉拳-黑虎掏心",
+      "太祖长拳-双抄封天"
+    ]
+  },
+  {
+    id: 24,
+    next: [
+      25
+    ],
+    name: "第十二关：武当紫霄宫",
+    enemyName: "紫霄宫主·宋远桥",
+    hp: 2600,
+    inner_amount: 46,
+    inner_mastery: 15,
+    agility: 95,
+    weapon_atk: 68,
+    armor_def: 41,
+    inner_skill: "吐纳法",
+    agility_skill: "梯云纵",
+    description: "太极神功出神入化。",
+    rewards: [
+      "经验+1200",
+      "招式-太极拳-揽雀尾"
+    ],
+    enemy_moves: [
+      "太极拳-揽雀尾",
+      "武当绵掌-白鹤亮翅",
+      "太祖长拳-十字踢腿"
+    ]
+  },
+  {
+    id: 25,
+    next: [
+      26,
+      27
+    ],
+    name: "第十三关：明教护法",
+    enemyName: "青翼蝠王·韦一笑",
+    hp: 2800,
+    inner_amount: 49,
+    inner_mastery: 16,
+    agility: 100,
+    weapon_atk: 72,
+    armor_def: 44,
+    inner_skill: "少林纯阳功",
+    agility_skill: "梯云纵",
+    description: "武功诡异，极难对付。",
+    rewards: [
+      "经验+1300"
+    ],
+    enemy_moves: [
+      "乾坤大挪移-颠倒乾坤",
+      "弹指神通-漫天花雨",
+      "狂风快剑-风卷残云"
+    ]
+  },
+  {
+    id: 26,
+    next: [
+      28,
+      29
+    ],
+    name: "第十四关：光明左使",
+    enemyName: "光明左使·杨逍",
+    hp: 3000,
+    inner_amount: 52,
+    inner_mastery: 17,
+    agility: 105,
+    weapon_atk: 76,
+    armor_def: 47,
+    inner_skill: "武当九阳功",
+    agility_skill: "一苇渡江",
+    description: "武功深不可测。",
+    rewards: [
+      "经验+1400"
+    ],
+    enemy_moves: [
+      "乾坤大挪移-颠倒乾坤",
+      "弹指神通-漫天花雨",
+      "狂风快剑-风卷残云"
+    ]
+  },
+  {
+    id: 27,
+    next: [
+      29
+    ],
+    name: "第十四关：光明右使",
+    enemyName: "光明右使·范遥",
+    hp: 3000,
+    inner_amount: 52,
+    inner_mastery: 17,
+    agility: 105,
+    weapon_atk: 76,
+    armor_def: 47,
+    inner_skill: "吐纳法",
+    agility_skill: "梯云纵",
+    description: "智勇双全，武功极高。",
+    rewards: [
+      "经验+1400"
+    ],
+    enemy_moves: [
+      "乾坤大挪移-颠倒乾坤",
+      "弹指神通-漫天花雨",
+      "狂风快剑-风卷残云"
+    ]
+  },
+  {
+    id: 28,
+    next: [
+      30
+    ],
+    name: "第十五关：绝顶高手",
+    enemyName: "东邪·黄药师",
+    hp: 3200,
+    inner_amount: 55,
+    inner_mastery: 18,
+    agility: 110,
+    weapon_atk: 80,
+    armor_def: 50,
+    inner_skill: "武当九阳功",
+    agility_skill: "梯云纵",
+    description: "武林五绝之一，招式变幻莫测。",
+    rewards: [
+      "经验+1500"
+    ],
+    enemy_moves: [
+      "弹指神通-漫天花雨",
+      "九阴白骨爪-九阴神抓"
+    ]
+  },
+  {
+    id: 29,
+    next: [
+      30
+    ],
+    name: "第十五关：绝顶高手",
+    enemyName: "西毒·欧阳锋",
+    hp: 3200,
+    inner_amount: 55,
+    inner_mastery: 18,
+    agility: 110,
+    weapon_atk: 80,
+    armor_def: 50,
+    inner_skill: "少林纯阳功",
+    agility_skill: "水上漂",
+    description: "武林五绝之一，蛤蟆功天下无双。",
+    rewards: [
+      "经验+1500"
+    ],
+    enemy_moves: [
+      "蛤蟆功-推窗望月",
+      "九阴白骨爪-九阴神抓"
+    ]
+  },
+  {
+    id: 30,
+    next: [],
+    name: "最终关：天下第一",
+    enemyName: "武林神话·无名",
+    hp: 5000,
+    inner_amount: 70,
+    inner_mastery: 25,
+    agility: 150,
+    weapon_atk: 100,
+    armor_def: 60,
+    inner_skill: "少林纯阳功",
+    agility_skill: "梯云纵",
+    description: "武林中的传说，真正的天下第一。",
+    rewards: [
+      "经验+5000",
+      "天下第一"
+    ],
+    enemy_moves: [
+      "降龙十八掌-亢龙有悔",
+      "乾坤大挪移-颠倒乾坤",
+      "太极拳-揽雀尾",
+      "蛤蟆功-推窗望月"
+    ]
+  }
+];

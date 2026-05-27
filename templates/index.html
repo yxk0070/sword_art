@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>武侠 - 招式对决</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .log-container { max-height: 400px; overflow-y: auto; }
+        .log-item { animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .health-bar { transition: width 0.5s ease-in-out; }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 font-sans min-h-screen">
+    <div id="app" class="container mx-auto p-4 max-w-5xl">
+        <h1 class="text-4xl font-bold text-center text-amber-500 mb-8 tracking-widest">剑影 - 招式对决</h1>
+        
+        <div v-if="loading" class="text-center text-xl">加载中...</div>
+        
+        <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- 左侧：状态栏与招式选择 -->
+            <div class="col-span-1 lg:col-span-1 space-y-6">
+                <!-- 玩家状态 -->
+                <div class="bg-gray-800 rounded-lg p-4 shadow-lg border border-gray-700">
+                    <h2 class="text-xl font-bold text-blue-400 mb-2">{{ state.player.name }}</h2>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span>气血: {{ state.player.hp }} / {{ state.player.max_hp }}</span>
+                        <span>轻功: {{ state.player.agility }}</span>
+                    </div>
+                    <div class="w-full bg-gray-700 rounded-full h-4 mb-2">
+                        <div class="bg-red-500 h-4 rounded-full health-bar" :style="`width: ${(state.player.hp / state.player.max_hp) * 100}%`"></div>
+                    </div>
+                </div>
+                
+                <!-- 敌人状态 -->
+                <div class="bg-gray-800 rounded-lg p-4 shadow-lg border border-gray-700">
+                    <h2 class="text-xl font-bold text-red-400 mb-2">{{ state.enemy.name }}</h2>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span>气血: {{ state.enemy.hp }} / {{ state.enemy.max_hp }}</span>
+                        <span>轻功: {{ state.enemy.agility }}</span>
+                    </div>
+                    <div class="w-full bg-gray-700 rounded-full h-4 mb-2">
+                        <div class="bg-red-500 h-4 rounded-full health-bar" :style="`width: ${(state.enemy.hp / state.enemy.max_hp) * 100}%`"></div>
+                    </div>
+                </div>
+
+                <!-- 招式选择 -->
+                <div class="bg-gray-800 rounded-lg p-4 shadow-lg border border-gray-700" v-if="!state.game_over">
+                    <h3 class="text-lg font-bold text-amber-500 mb-3">武功招式库</h3>
+                    <div class="space-y-2">
+                        <button v-for="(m, index) in state.moves" :key="index" 
+                            @click="addMove(index)"
+                            :disabled="currentDuration + m.duration > 12"
+                            class="w-full text-left px-3 py-2 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition border border-gray-600">
+                            <div class="font-bold">{{ m.name }}</div>
+                            <div class="text-xs text-gray-400">消耗间隔: {{ m.duration }}</div>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 重新开始 -->
+                <div v-if="state.game_over" class="bg-gray-800 rounded-lg p-4 shadow-lg border border-gray-700 text-center">
+                    <h2 class="text-2xl font-bold mb-4" :class="state.winner === state.player.name ? 'text-green-500' : 'text-red-500'">
+                        {{ state.winner === state.player.name ? '战斗胜利！' : '胜败乃兵家常事，大侠请重新来过！' }}
+                    </h2>
+                    <button @click="resetGame" class="px-6 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded shadow transition">
+                        重新开始
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 右侧：时间线与战斗日志 -->
+            <div class="col-span-1 lg:col-span-2 space-y-6">
+                <!-- 时间线编排 -->
+                <div class="bg-gray-800 rounded-lg p-4 shadow-lg border border-gray-700">
+                    <div class="flex justify-between items-end mb-3">
+                        <h3 class="text-lg font-bold text-amber-500">本回合招式编排 ({{ currentDuration }} / 12)</h3>
+                        <div class="space-x-2">
+                            <button @click="clearMoves" class="px-3 py-1 text-sm bg-gray-600 hover:bg-gray-500 rounded transition">清空</button>
+                            <button @click="submitTurn" :disabled="selectedMoves.length === 0 || state.game_over" class="px-4 py-1 text-sm bg-amber-600 hover:bg-amber-500 text-white font-bold rounded transition disabled:opacity-50">
+                                确认出招
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex h-12 bg-gray-900 rounded border border-gray-700 overflow-hidden">
+                        <div v-for="(mIdx, i) in selectedMoves" :key="i" 
+                            @click="removeMove(i)"
+                            class="h-full flex items-center justify-center text-xs font-bold border-r border-gray-800 cursor-pointer hover:bg-opacity-80 transition"
+                            :class="getColorClass(i)"
+                            :style="`width: ${(state.moves[mIdx].duration / 12) * 100}%`"
+                            title="点击移除">
+                            {{ state.moves[mIdx].name }}
+                        </div>
+                        <div v-if="currentDuration < 12" class="h-full bg-gray-800 flex items-center justify-center text-gray-500 text-xs" :style="`width: ${((12 - currentDuration) / 12) * 100}%`">
+                            剩余 {{ 12 - currentDuration }} 间隔
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 战斗日志 -->
+                <div class="bg-gray-800 rounded-lg p-4 shadow-lg border border-gray-700">
+                    <h3 class="text-lg font-bold text-amber-500 mb-3">第 {{ state.turn }} 回合 - 战斗记录</h3>
+                    <div class="log-container bg-gray-900 p-4 rounded font-mono text-sm leading-relaxed" id="logBox">
+                        <div v-if="logs.length === 0" class="text-gray-500 italic text-center py-8">
+                            战斗尚未开始...
+                        </div>
+                        <div v-for="(log, i) in logs" :key="i" class="log-item mb-1" :class="getLogColor(log)">
+                            {{ log }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- 引入 Vue.js 用于快速构建交互 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script>
+        const { createApp, ref, computed, onMounted, nextTick } = Vue;
+
+        createApp({
+            setup() {
+                const loading = ref(true);
+                const state = ref({});
+                const logs = ref([]);
+                const selectedMoves = ref([]);
+                
+                const colors = ['bg-blue-600', 'bg-green-600', 'bg-purple-600', 'bg-indigo-600'];
+
+                const fetchState = async () => {
+                    const res = await fetch('/api/state');
+                    state.value = await res.json();
+                    loading.value = false;
+                };
+
+                const currentDuration = computed(() => {
+                    if (!state.value.moves) return 0;
+                    return selectedMoves.value.reduce((total, idx) => total + state.value.moves[idx].duration, 0);
+                });
+
+                const addMove = (idx) => {
+                    if (currentDuration.value + state.value.moves[idx].duration <= 12) {
+                        selectedMoves.value.push(idx);
+                    }
+                };
+
+                const removeMove = (index) => {
+                    selectedMoves.value.splice(index, 1);
+                };
+
+                const clearMoves = () => {
+                    selectedMoves.value = [];
+                };
+
+                const submitTurn = async () => {
+                    if (selectedMoves.value.length === 0) return;
+                    
+                    const res = await fetch('/api/play', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ moves: selectedMoves.value })
+                    });
+                    const data = await res.json();
+                    
+                    state.value.player = data.player;
+                    state.value.enemy = data.enemy;
+                    state.value.turn = data.turn;
+                    state.value.game_over = data.game_over;
+                    state.value.winner = data.winner;
+                    
+                    logs.value = data.logs;
+                    selectedMoves.value = [];
+                    
+                    nextTick(() => {
+                        const logBox = document.getElementById('logBox');
+                        if (logBox) logBox.scrollTop = logBox.scrollHeight;
+                    });
+                };
+
+                const resetGame = async () => {
+                    await fetch('/api/reset', { method: 'POST' });
+                    logs.value = [];
+                    selectedMoves.value = [];
+                    await fetchState();
+                };
+
+                const getColorClass = (i) => colors[i % colors.length];
+
+                const getLogColor = (log) => {
+                    if (log.includes('=== 第')) return 'text-amber-400 font-bold mt-4 mb-2 text-lg';
+                    if (log.includes('[间隔')) return 'text-gray-400 mt-2 border-b border-gray-800 pb-1';
+                    if (log.includes('Combo触发!')) return 'text-purple-400 font-bold';
+                    if (log.includes('弱点击破')) return 'text-red-400 font-bold';
+                    if (log.includes('完美闪避')) return 'text-green-400 font-bold';
+                    if (log.includes('造成了')) return 'text-red-300';
+                    if (log.includes('化解部分')) return 'text-blue-300';
+                    if (log.includes('护住了')) return 'text-blue-400';
+                    if (log.includes('额外效果')) return 'text-orange-400';
+                    if (log.startsWith('[')) return 'text-gray-100 font-bold';
+                    return 'text-gray-300 ml-4';
+                };
+
+                onMounted(() => {
+                    fetchState();
+                });
+
+                return {
+                    loading, state, logs, selectedMoves, currentDuration,
+                    addMove, removeMove, clearMoves, submitTurn, resetGame,
+                    getColorClass, getLogColor
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
