@@ -104,9 +104,9 @@ export default function Timelines({
 
                       {tickResults &&
                         tickIndex < currentTick &&
-                        tickResults[tickIndex]?.p1?.length > 0 && (
+                        tickResults[tickIndex]?.p1?.events?.length > 0 && (
                           <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center pointer-events-none p-0.5">
-                            {tickResults[tickIndex].p1.map(
+                            {tickResults[tickIndex].p1.events.map(
                               (res: string, idx: number) => (
                                 <span
                                   key={idx}
@@ -207,9 +207,9 @@ export default function Timelines({
 
                           {tickResults &&
                             tickIndex < currentTick &&
-                            tickResults[tickIndex]?.p2?.length > 0 && (
+                            tickResults[tickIndex]?.p2?.events?.length > 0 && (
                               <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center pointer-events-none p-0.5">
-                                {tickResults[tickIndex].p2.map(
+                                {tickResults[tickIndex].p2.events.map(
                                   (res: string, idx: number) => (
                                     <span
                                       key={idx}

@@ -13,6 +13,7 @@ import DamageCalculationGuide from "./components/DamageCalculationGuide";
 import LevelSelection from "./components/LevelSelection";
 import CharacterProfile from "./components/CharacterProfile";
 import StartScreen from "./components/StartScreen";
+import Arena from "./components/Arena";
 import { LEVELS } from "./levels";
 import enemyImg from "./assets/role/侠客头像.png";
 
@@ -647,6 +648,18 @@ function App() {
 
           {/* 中间：时间线与战斗日志 */}
           <div className="col-span-1 lg:col-span-2 space-y-6">
+            {/* 擂台动图展示 */}
+            <Arena
+              levelName={LEVELS.find((l) => l.id === currentLevel)?.name}
+              playerHp={animatedHp.p1}
+              enemyHp={animatedHp.p2}
+              playerMaxHp={animatedHp.p1Max}
+              enemyMaxHp={animatedHp.p2Max}
+              isPlaying={isPlaying}
+              currentTick={currentTick}
+              tickResults={state.tick_results}
+            />
+
             {/* 时间线编排 */}
             <Timelines
               currentDuration={currentDuration}

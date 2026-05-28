@@ -281,6 +281,19 @@ export class BattleEngine {
     if (!atk_action) return;
 
     const [move, node, combo_bonus] = atk_action;
+    tick_results[attacker_key].move = move.name;
+    tick_results[attacker_key].is_attack = node.is_attack;
+
+    if (node.phase === "起" && combo_bonus > 1.0) {
+      if (attacker.equipped_inner_skill?.special_effect === "combo_bonus_up") {
+        this.log(
+          `【Combo触发!】 起结相连，配合【少林纯阳功】刚猛内劲，招式威力极其惊人！(x2.0)`
+        );
+      } else {
+        this.log(`【Combo触发!】 起结相连，招式威力大增！`);
+      }
+    }
+
     this.log(`[${attacker.name}] 施展 ${move.name} ${node.toString()}`);
 
     const agility_diff = defender.agility - attacker.agility;
@@ -323,14 +336,11 @@ export class BattleEngine {
           `  -> ${defender.name} 凭借高超轻功(差值:${agility_diff})，身形一晃完美闪避了攻击！`
         );
       }
-      tick_results[defender_key].push("闪避");
+      tick_results[defender_key].events.push("闪避");
       return;
     }
 
     if (node.is_attack) {
-      if (combo_bonus > 1.0) {
-        tick_results[attacker_key].push("连击");
-      }
       const atk_val =
         attacker.get_attack_val(move.name) * node.value_modifier * combo_bonus;
       let def_val = defender.get_defense_val();
@@ -347,14 +357,14 @@ export class BattleEngine {
           this.log(
             `  -> ${defender.name} 的防守节点成功护住了 ${node.target_part}！`
           );
-          tick_results[defender_key].push("招架");
+          tick_results[defender_key].events.push("招架");
         }
       }
 
       if (node.special_effect === "pierce") {
         def_val = Math.floor(def_val * 0.5);
         this.log(`  -> 【破甲】生效，招式凌厉，无视了敌人一半防御！`);
-        tick_results[attacker_key].push("破甲");
+        tick_results[attacker_key].events.push("破甲");
       }
 
       let damage = Math.max(1, Math.floor(atk_val - def_val));
@@ -363,23 +373,27 @@ export class BattleEngine {
         damage = Math.floor(damage * 1.5 + 20);
         is_weakness_break = true;
         this.log(`  -> 击中弱势节点！【弱点击破】触发！`);
-        tick_results[defender_key].push("破绽");
+        tick_results[defender_key].events.push("破绽");
       } else if (target_strong && def_action) {
         damage = Math.floor(damage * 0.7);
         this.log(`  -> 击中强势节点，伤害被化解部分。`);
+      }
+
+      if (combo_bonus > 1.0) {
+        tick_results[attacker_key].events.push("连击");
       }
 
       defender.hp -= damage;
       this.log(
         `  -> 造成了 ${damage} 点伤害！ (剩余HP: ${defender.hp}/${defender.max_hp})`
       );
-      tick_results[defender_key].push(`-${damage}`);
+      tick_results[defender_key].events.push(`-${damage}`);
 
       if (node.special_effect === "lifesteal") {
         const heal = Math.floor(damage * 0.3);
         attacker.hp = Math.min(attacker.max_hp, attacker.hp + heal);
         this.log(`  -> 【吸血】生效，${attacker.name} 恢复了 ${heal} 点气血！`);
-        tick_results[attacker_key].push(`+${heal}`);
+        tick_results[attacker_key].events.push(`+${heal}`);
       }
 
       if (def_action) {
@@ -390,7 +404,7 @@ export class BattleEngine {
           this.log(
             `  -> 【反震】生效，${defender.name} 的防守节点将 ${reflect} 点伤害反弹给了 ${attacker.name}！`
           );
-          tick_results[attacker_key].push(`反震 -${reflect}`);
+          tick_results[attacker_key].events.push(`反震 -${reflect}`);
         }
       }
 
@@ -399,6 +413,7 @@ export class BattleEngine {
       }
     } else {
       this.log(`  -> ${attacker.name} 严阵以待，防护 ${node.target_part}。`);
+      tick_results[attacker_key].events.push("防御");
     }
   }
 
@@ -436,12 +451,8 @@ export class BattleEngine {
                   "combo_bonus_up"
                 ) {
                   combo_bonus = 2.0;
-                  this.log(
-                    `【Combo触发!】 起结相连，配合【少林纯阳功】刚猛内劲，招式威力极其惊人！(x2.0)`
-                  );
                 } else {
                   combo_bonus = 1.5;
-                  this.log(`【Combo触发!】 起结相连，招式威力大增！`);
                 }
               }
               timeline[idx + i] = [m, node, combo_bonus];
@@ -462,10 +473,19 @@ export class BattleEngine {
     build_timeline(p1_moves, p1_timeline, this.p1);
     build_timeline(p2_moves, p2_timeline, this.p2);
 
-    const tick_results: Record<number, { p1: string[]; p2: string[] }> = {};
+    const tick_results: Record<
+      number,
+      {
+        p1: { events: string[]; move: string | null; is_attack: boolean };
+        p2: { events: string[]; move: string | null; is_attack: boolean };
+      }
+    > = {};
 
     for (let i = 0; i < 12; i++) {
-      tick_results[i] = { p1: [], p2: [] };
+      tick_results[i] = {
+        p1: { events: [], move: null, is_attack: false },
+        p2: { events: [], move: null, is_attack: false },
+      };
       const p1_act = p1_timeline[i];
       const p2_act = p2_timeline[i];
       if (p1_act || p2_act) {
