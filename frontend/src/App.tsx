@@ -436,13 +436,43 @@ function App() {
       let currentLogIndex = 0;
       const interval = setInterval(() => {
         if (currentLogIndex < data.logs.length) {
-          const nextLog = data.logs[currentLogIndex];
-          setDisplayedLogs((prev) => [...prev, nextLog]);
+          // Batch process logs for the current tick
+          const currentLogsBatch = [];
+          let nextLog = data.logs[currentLogIndex];
+          let foundTickHeader = false;
+          let parsedTick = currentTick;
 
-          // Try to parse the current tick from the log if it exists
-          const match = nextLog.match(/\[第 (\d+) 息\]/);
-          if (match) {
-            const parsedTick = parseInt(match[1]) - 1;
+          // If the current log is a tick header, process all logs until the next tick header or end
+          if (
+            nextLog.match(/\[第 (\d+) 息\]/) ||
+            nextLog.match(/=== 第 \d+ 回合 ===/)
+          ) {
+            if (nextLog.match(/\[第 (\d+) 息\]/)) {
+              parsedTick = parseInt(nextLog.match(/\[第 (\d+) 息\]/)[1]) - 1;
+            }
+            currentLogsBatch.push(nextLog);
+            currentLogIndex++;
+
+            while (currentLogIndex < data.logs.length) {
+              const peekLog = data.logs[currentLogIndex];
+              if (
+                peekLog.match(/\[第 (\d+) 息\]/) ||
+                peekLog.match(/=== 第 \d+ 回合 ===/)
+              ) {
+                break; // Stop before the next tick header
+              }
+              currentLogsBatch.push(peekLog);
+              currentLogIndex++;
+            }
+          } else {
+            // For any stray logs (shouldn't happen often, but just in case)
+            currentLogsBatch.push(nextLog);
+            currentLogIndex++;
+          }
+
+          setDisplayedLogs((prev) => [...prev, ...currentLogsBatch]);
+
+          if (parsedTick !== currentTick) {
             setCurrentTick(parsedTick);
             // Sync HP for this tick
             const tickHp = data.hp_history.find((h) => h.tick === parsedTick);
@@ -454,8 +484,6 @@ function App() {
               }));
             }
           }
-
-          currentLogIndex++;
         } else {
           clearInterval(interval);
           setState((prev) => ({
