@@ -1,4 +1,4 @@
-# 武林群侠传 (Sword Art)
+# 江湖路远 (Sword Art)
 
 一款基于 React 构建的文字武侠对战游戏。
 

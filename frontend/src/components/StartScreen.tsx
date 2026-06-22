@@ -42,7 +42,7 @@ export default function StartScreen({
     <div className="min-h-screen bg-gray-900 text-gray-100 flex items-center justify-center p-4">
       <div className="bg-gray-800 rounded-lg p-8 shadow-2xl border border-gray-700 max-w-md w-full">
         <h1 className="text-3xl font-bold text-center text-amber-500 mb-8 tracking-widest">
-          武林群侠传
+          江湖路远
         </h1>
 
         <div className="space-y-6">
